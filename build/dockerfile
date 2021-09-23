@@ -4,7 +4,6 @@ FROM node:16
 WORKDIR /usr/src/database
 
 # Install Yarn
-COPY ./entrypoint.sh ./
 RUN apt-get -y update \
 	&& apt-get -y install yarn \
 	&& apt-get clean
