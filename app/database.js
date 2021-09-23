@@ -224,7 +224,7 @@ const process_satellites = function(guildId, properties) {
 							return;
 						}
 						const cycleRatio = (subscription.current_period_end - Math.floor(Date.now() / 1000)) / (subscription.current_period_end - subscription.current_period_start);
-						const quantity = int(ceil((satelliteCount - properties.addons.satellites.count) * 20 * cycleRatio));
+						const quantity = Math.floor(Math.ceil((satelliteCount - properties.addons.satellites.count) * 20 * cycleRatio));
 						stripe.subscriptionItems.createUsageRecord(subscription.items.data[0].id, {
 							quantity: quantity,
 							timestamp: Math.floor(Date.now() / 1000),
