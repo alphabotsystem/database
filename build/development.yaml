@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: database-development
+  labels:
+    app: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database
+  serviceName: "database"
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+      - name: database
+        image: alphabotsystem/alpha-database
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+          - name: google-cloud-auth
+            mountPath: /run/secrets/google-cloud-auth
+            readOnly: true
+        ports:
+        - containerPort: 6900
+      volumes:
+        - name: alpha-service-keys
+          secret:
+            secretName: alpha-service-keys
+            items:
+              - key: credentials
+                path: key
+        - name: google-cloud-auth
+          secret:
+            secretName: google-cloud-auth
+            items:
+              - key: gcloud_credentials.json
+                path: key
+---
+apiVersion: v1
+kind: Service   
+metadata:
+  name: database
+spec:
+  type: ClusterIP
+  selector:
+    app: database
+  ports:
+    - protocol: TCP
+      port: 6900
+      targetPort: 6900
