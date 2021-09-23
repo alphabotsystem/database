@@ -40,16 +40,16 @@ jobs:
     # Build the Docker image
     - name: Build
       run: |-
-        docker image build -t europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/candle-server -f ./build/dockerfile ./
+        docker image build -t europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/database -f ./build/dockerfile ./
 
     # Push the Docker image to Google Container Registry
     - name: Publish
       run: |-
-        gcloud artifacts docker images delete europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/candle-server || :
-        docker push europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/candle-server
+        gcloud artifacts docker images delete europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/database || :
+        docker push europe-west4-docker.pkg.dev/$PROJECT_ID/alpha-bot/database
 
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |-
-        kubectl delete deployments/candle-server --namespace=alpha-bot || :
+        kubectl delete deployments/database --namespace=alpha-bot || :
         kubectl apply -f build/deployment.yaml
