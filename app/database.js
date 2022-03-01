@@ -205,7 +205,7 @@ const guild_validation = function (guildId, properties) {
 }
 
 const unregistered_user_validation = function (accountId, properties) {
-	if (properties.commandPresets && properties.commandPresets.length == 0) {
+	if (properties.commandPresets) {
 		unregisteredUsersRef
 			.doc(accountId)
 			.set(
