@@ -26,7 +26,7 @@ const accountsRef = firestore.collection("accounts")
 const guildsRef = firestore.collection("discord").doc("properties").collection("guilds")
 const unregisteredUsersRef = firestore.collection("discord").doc("properties").collection("users")
 
-const accountsObserver = accountsRef.onSnapshot((querySnapshot) => {
+accountsRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data()
@@ -60,7 +60,7 @@ const accountsObserver = accountsRef.onSnapshot((querySnapshot) => {
 	})
 	accountsReady = true
 })
-const guildsObserver = guildsRef.onSnapshot((querySnapshot) => {
+guildsRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const guildId = change.doc.id
 		const properties = change.doc.data()
@@ -77,7 +77,7 @@ const guildsObserver = guildsRef.onSnapshot((querySnapshot) => {
 	})
 	guildsReady = true
 })
-const unregisteredUsersObserver = unregisteredUsersRef.onSnapshot((querySnapshot) => {
+unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data()
@@ -130,8 +130,8 @@ const get_guild_keys = function () {
 					}
 				)
 				.catch((err) => {
-					console.error(error)
-					if (process.env.PRODUCTION_MODE) errors.report(error)
+					console.error(err)
+					if (process.env.PRODUCTION_MODE) errors.report(err)
 				})
 		} else {
 			process_satellites(guildId, properties)
@@ -152,8 +152,8 @@ const guild_validation = function (guildId, properties) {
 				.doc(guildId)
 				.delete()
 				.catch((err) => {
-					console.error(error)
-					if (process.env.PRODUCTION_MODE) errors.report(error)
+					console.error(err)
+					if (process.env.PRODUCTION_MODE) errors.report(err)
 				})
 			return true
 		} else if (properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 86400) {
@@ -168,8 +168,8 @@ const guild_validation = function (guildId, properties) {
 					}
 				)
 				.catch((err) => {
-					console.error(error)
-					if (process.env.PRODUCTION_MODE) errors.report(error)
+					console.error(err)
+					if (process.env.PRODUCTION_MODE) errors.report(err)
 				})
 			return true
 		}
@@ -196,8 +196,8 @@ const guild_validation = function (guildId, properties) {
 				}
 			)
 			.catch((err) => {
-				console.error(error)
-				if (process.env.PRODUCTION_MODE) errors.report(error)
+				console.error(err)
+				if (process.env.PRODUCTION_MODE) errors.report(err)
 			})
 		return true
 	}
@@ -205,30 +205,13 @@ const guild_validation = function (guildId, properties) {
 }
 
 const unregistered_user_validation = function (accountId, properties) {
-	if (properties.commandPresets) {
-		unregisteredUsersRef
-			.doc(accountId)
-			.set(
-				{
-					commandPresets: Firestore.FieldValue.delete(),
-				},
-				{
-					merge: true,
-				}
-			)
-			.catch((err) => {
-				console.error(error)
-				if (process.env.PRODUCTION_MODE) errors.report(error)
-			})
-		return true
-	}
 	if (helpers.isEmpty(properties)) {
 		unregisteredUsersRef
 			.doc(accountId)
 			.delete()
 			.catch((err) => {
-				console.error(error)
-				if (process.env.PRODUCTION_MODE) errors.report(error)
+				console.error(err)
+				if (process.env.PRODUCTION_MODE) errors.report(err)
 			})
 		return true
 	}
@@ -270,8 +253,8 @@ const process_satellites = function (guildId, properties) {
 								}
 							)
 							.catch((err) => {
-								console.error(error)
-								if (process.env.PRODUCTION_MODE) errors.report(error)
+								console.error(err)
+								if (process.env.PRODUCTION_MODE) errors.report(err)
 							})
 					})
 					return true
