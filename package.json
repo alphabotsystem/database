@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "@google-cloud/error-reporting": "^2.0.3",
+    "@google-cloud/error-reporting": "^3.0.0",
     "@google-cloud/firestore": "^5.0.2",
     "async-mutex": "^0.3.2",
     "deepmerge": "^4.2.2",
-    "stripe": "^8.213.0",
+    "stripe": "^9.6.0",
     "zeromq": "^6.0.0-beta.6"
   }
 }
