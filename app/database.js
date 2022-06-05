@@ -42,16 +42,18 @@ accountsRef.onSnapshot((querySnapshot) => {
 			accountProperties[accountId] = properties
 			const userId = properties.oauth.discord.userId
 			if (userId) {
-				delete accountProperties[userId]
+				accountProperties[userId] = properties
 				accountIdMap[userId] = accountId
 				accountIdMap[accountId] = userId
 			} else if (accountIdMap[accountId]) {
+				delete accountProperties[userId]
 				delete accountIdMap[accountIdMap[accountId]]
 				delete accountIdMap[accountId]
 			}
 		} else {
 			const userId = accountProperties[accountId].oauth.discord.userId
 			if (userId) {
+				delete accountProperties[userId]
 				delete accountIdMap[accountIdMap[accountId]]
 				delete accountIdMap[accountId]
 			}
