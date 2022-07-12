@@ -31,14 +31,14 @@ accountsRef.onSnapshot((querySnapshot) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data()
 
-		// Safety
-		Object.keys(properties.apiKeys).forEach((key) => {
-			delete properties.apiKeys[key].secret
-			delete properties.apiKeys[key].passphrase
-		})
-
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
+			// Safety
+			Object.keys(properties.apiKeys).forEach((key) => {
+				delete properties.apiKeys[key].secret
+				delete properties.apiKeys[key].passphrase
+			})
+
 			accountProperties[accountId] = properties
 			const userId = properties.oauth.discord.userId
 			if (userId) {
@@ -50,7 +50,7 @@ accountsRef.onSnapshot((querySnapshot) => {
 				delete accountIdMap[accountIdMap[accountId]]
 				delete accountIdMap[accountId]
 			}
-		} else {
+		} else if (change.type === "removed") {
 			const userId = accountProperties[accountId].oauth.discord.userId
 			if (userId) {
 				delete accountProperties[userId]
@@ -58,6 +58,8 @@ accountsRef.onSnapshot((querySnapshot) => {
 				delete accountIdMap[accountId]
 			}
 			delete accountProperties[accountId]
+		} else {
+			console.error("unknown change type: " + change.type)
 		}
 	})
 	accountsReady = true
@@ -67,14 +69,16 @@ guildsRef.onSnapshot((querySnapshot) => {
 		const guildId = change.doc.id
 		const properties = change.doc.data()
 
-		// Validation
-		if (isManager && guild_validation(guildId, properties)) return
-
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
+			// Validation
+			if (isManager && guild_validation(guildId, properties)) return
+
 			guildProperties[guildId] = properties
-		} else {
+		} else if (change.type === "removed") {
 			delete guildProperties[guildId]
+		} else {
+			console.error("unknown change type: " + change.type)
 		}
 	})
 	guildsReady = true
@@ -84,22 +88,24 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data()
 
-		// Safety
-		delete properties.connection
-		delete properties.trace
-		delete properties.credit
-		if (helpers.isEmpty(properties)) return
-
-		// Validation
-		if (isManager && unregistered_user_validation(accountId, properties)) return
-
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
+			// Safety
+			delete properties.connection
+			delete properties.trace
+			delete properties.credit
+			if (helpers.isEmpty(properties)) return
+
+			// Validation
+			if (isManager && unregistered_user_validation(accountId, properties)) return
+
 			if (!accountIdMap[accountId]) {
 				accountProperties[accountId] = properties
 			}
-		} else {
+		} else if (change.type === "removed") {
 			delete accountProperties[accountId]
+		} else {
+			console.error("unknown change type: " + change.type)
 		}
 	})
 	usersReady = true
