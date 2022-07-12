@@ -9,8 +9,6 @@ const create_guild_settings = function (settings) {
 		addons: {
 			satellites: { enabled: false },
 			marketAlerts: { enabled: false },
-			flow: { enabled: false },
-			statistics: { enabled: false },
 		},
 		settings: {
 			assistant: {
