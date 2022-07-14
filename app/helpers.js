@@ -14,18 +14,9 @@ const create_guild_settings = function (settings) {
 			assistant: {
 				enabled: true,
 			},
-			channels: {
-				public: null,
-				private: null,
-			},
-			cope: {
-				holding: [],
-				voting: [],
-			},
 			messageProcessing: {
 				bias: "traditional",
 				autodelete: false,
-				sentiment: true,
 			},
 			setup: {
 				completed: false,
