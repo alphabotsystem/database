@@ -90,14 +90,14 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
+			// Validation
+			if (isManager && unregistered_user_validation(accountId, properties)) return
+
 			// Safety
 			delete properties.connection
 			delete properties.trace
 			delete properties.credit
 			if (helpers.isEmpty(properties)) return
-
-			// Validation
-			if (isManager && unregistered_user_validation(accountId, properties)) return
 
 			if (!accountIdMap[accountId]) {
 				accountProperties[accountId] = properties
@@ -213,7 +213,7 @@ const guild_validation = function (guildId, properties) {
 }
 
 const unregistered_user_validation = function (accountId, properties) {
-	if (helpers.isEmpty(properties)) {
+	if (properties.connection === null && properties.trace === null && Object.keys(properties).length === 2) {
 		unregisteredUsersRef
 			.doc(accountId)
 			.delete()
