@@ -301,6 +301,7 @@ const main = async () => {
 				response = accountProperties[entityId]
 			} else if (service == "guild_fetch") {
 				response = guildProperties[entityId]
+				response.connection = accountProperties[response.settings.setup.connection]
 			} else if (service == "account_keys") {
 				response = get_account_keys()
 			} else if (service == "guild_keys") {
