@@ -111,42 +111,6 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	usersReady = true
 })
 
-const get_account_keys = () => {
-	let response = {}
-	Object.keys(accountProperties).forEach((accountId) => {
-		const properties = accountProperties[accountId]
-		if (properties.oauth) {
-			response[accountId] = properties.oauth.discord.userId
-		}
-	})
-	return response
-}
-
-const get_guild_keys = () => {
-	let response = {}
-	Object.keys(guildProperties).forEach((guildId) => {
-		const properties = guildProperties[guildId]
-		if (properties.stale && properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 86400) {
-			guildsRef
-				.doc(guildId)
-				.set(
-					{
-						stale: Firestore.FieldValue.delete(),
-					},
-					{
-						merge: true,
-					}
-				)
-				.catch((err) => {
-					console.error(err)
-					if (process.env.PRODUCTION_MODE) errors.report(err)
-				})
-		} else {
-			response[guildId] = properties.settings.setup.connection
-		}
-	})
-	return response
-}
 
 const guild_validation = (guildId, properties) => {
 	if (!properties.addons || !properties.settings) {
@@ -219,6 +183,51 @@ const unregistered_user_validation = (accountId, properties) => {
 	return false
 }
 
+const get_guild_properties = (guildId) => {
+	response = guildProperties[guildId]
+	if (response) {
+		response.connection = accountProperties[response.settings.setup.connection]
+	}
+	return response
+}
+
+const get_account_keys = () => {
+	let response = {}
+	Object.keys(accountProperties).forEach((accountId) => {
+		const properties = accountProperties[accountId]
+		if (properties.oauth) {
+			response[accountId] = properties.oauth.discord.userId
+		}
+	})
+	return response
+}
+
+const get_guild_keys = () => {
+	let response = {}
+	Object.keys(guildProperties).forEach((guildId) => {
+		const properties = guildProperties[guildId]
+		if (properties.stale && properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 86400) {
+			guildsRef
+				.doc(guildId)
+				.set(
+					{
+						stale: Firestore.FieldValue.delete(),
+					},
+					{
+						merge: true,
+					}
+				)
+				.catch((err) => {
+					console.error(err)
+					if (process.env.PRODUCTION_MODE) errors.report(err)
+				})
+		} else {
+			response[guildId] = properties.settings.setup.connection
+		}
+	})
+	return response
+}
+
 const main = async () => {
 	console.log("[Startup]: Database server is online")
 
@@ -244,8 +253,7 @@ const main = async () => {
 			if (service == "account_fetch") {
 				response = accountProperties[entityId]
 			} else if (service == "guild_fetch") {
-				response = guildProperties[entityId]
-				response.connection = response ? accountProperties[response.settings.setup.connection] : null
+				response = get_guild_properties(entityId)
 			} else if (service == "account_keys") {
 				response = get_account_keys()
 			} else if (service == "guild_keys") {
