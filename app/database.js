@@ -181,7 +181,7 @@ const guild_validation = (guildId, properties) => {
 			return true
 		}
 	}
-	if (properties.addons.satellites.added.length === 0) {
+	if (properties.addons.satellites.added && properties.addons.satellites.added.length === 0) {
 		guildsRef
 			.doc(guildId)
 			.set(
