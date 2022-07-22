@@ -2,7 +2,6 @@ const helpers = require("./helpers.js")
 
 const zmq = require("zeromq")
 const Mutex = require("async-mutex").Mutex
-const stripe = require("stripe")(process.env.STRIPE_KEY)
 const Firestore = require("@google-cloud/firestore")
 const firestore = new Firestore({
 	projectId: "nlc-bot-36685",

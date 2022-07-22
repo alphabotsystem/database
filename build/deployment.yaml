@@ -34,11 +34,6 @@ spec:
             value: "1"
           - name: NODE_ENV
             value: "production"
-          - name: STRIPE_KEY
-            valueFrom:
-              secretKeyRef:
-                name: alpha-credentials
-                key: STRIPE_KEY
         ports:
           - containerPort: 6900
       volumes:
