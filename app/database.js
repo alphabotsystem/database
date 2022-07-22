@@ -111,7 +111,7 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	usersReady = true
 })
 
-const get_account_keys = function () {
+const get_account_keys = () => {
 	let response = {}
 	Object.keys(accountProperties).forEach((accountId) => {
 		const properties = accountProperties[accountId]
@@ -122,7 +122,7 @@ const get_account_keys = function () {
 	return response
 }
 
-const get_guild_keys = function () {
+const get_guild_keys = () => {
 	let response = {}
 	Object.keys(guildProperties).forEach((guildId) => {
 		const properties = guildProperties[guildId]
@@ -142,14 +142,13 @@ const get_guild_keys = function () {
 					if (process.env.PRODUCTION_MODE) errors.report(err)
 				})
 		} else {
-			process_satellites(guildId, properties)
 			response[guildId] = properties.settings.setup.connection
 		}
 	})
 	return response
 }
 
-const guild_validation = function (guildId, properties) {
+const guild_validation = (guildId, properties) => {
 	if (!properties.addons || !properties.settings) {
 		guildsRef.doc(guildId).set(helpers.create_guild_settings(properties))
 		return true
@@ -182,20 +181,14 @@ const guild_validation = function (guildId, properties) {
 			return true
 		}
 	}
-	if (process_satellites(guildId, properties)) {
-		return true
-	}
-	if (!properties.addons.satellites.enabled && properties.addons.satellites.count) {
+	if (properties.addons.satellites.added.length === 0) {
 		guildsRef
 			.doc(guildId)
 			.set(
 				{
 					addons: {
 						satellites: {
-							enabled: false,
-							count: Firestore.FieldValue.delete(),
 							added: Firestore.FieldValue.delete(),
-							connection: Firestore.FieldValue.delete(),
 						},
 					},
 				},
@@ -212,7 +205,7 @@ const guild_validation = function (guildId, properties) {
 	return false
 }
 
-const unregistered_user_validation = function (accountId, properties) {
+const unregistered_user_validation = (accountId, properties) => {
 	if (properties.connection === null && properties.trace === null && Object.keys(properties).length === 2) {
 		unregisteredUsersRef
 			.doc(accountId)
@@ -222,55 +215,6 @@ const unregistered_user_validation = function (accountId, properties) {
 				if (process.env.PRODUCTION_MODE) errors.report(err)
 			})
 		return true
-	}
-	return false
-}
-
-const process_satellites = function (guildId, properties) {
-	if (properties.addons.satellites.enabled && properties.addons.satellites.added) {
-		const satelliteCount = properties.addons.satellites.added.length
-		if (satelliteCount > properties.addons.satellites.count) {
-			if (accountProperties[properties.addons.satellites.connection] && accountProperties[properties.addons.satellites.connection].customer.personalSubscription.subscription) {
-				if (process.env.PRODUCTION_MODE) {
-					stripe.subscriptions.retrieve(accountProperties[properties.addons.satellites.connection].customer.personalSubscription.subscription, function (err, subscription) {
-						if (err) {
-							console.error(error)
-							if (process.env.PRODUCTION_MODE) errors.report(error)
-							return
-						}
-						const cycleRatio = (subscription.current_period_end - Math.floor(Date.now() / 1000)) / (subscription.current_period_end - subscription.current_period_start)
-						const quantity = Math.floor(Math.ceil((satelliteCount - properties.addons.satellites.count) * 20 * cycleRatio))
-						stripe.subscriptionItems.createUsageRecord(subscription.items.data[0].id, {
-							quantity: quantity,
-							timestamp: Math.floor(Date.now() / 1000),
-							action: "increment",
-						})
-						guildsRef
-							.doc(guildId)
-							.set(
-								{
-									addons: {
-										satellites: {
-											enabled: true,
-											count: satelliteCount,
-										},
-									},
-								},
-								{
-									merge: true,
-								}
-							)
-							.catch((err) => {
-								console.error(err)
-								if (process.env.PRODUCTION_MODE) errors.report(err)
-							})
-					})
-					return true
-				} else {
-					console.log(guildId + ": " + satelliteCount + " satellites")
-				}
-			}
-		}
 	}
 	return false
 }
