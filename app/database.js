@@ -112,7 +112,7 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 
 
 const guild_validation = (guildId, properties) => {
-	if (!properties.addons || !properties.settings) {
+	if (!properties.settings) {
 		guildsRef.doc(guildId).set(helpers.create_guild_settings(properties))
 		return true
 	}
@@ -143,27 +143,6 @@ const guild_validation = (guildId, properties) => {
 				})
 			return true
 		}
-	}
-	if (properties.addons.satellites.added && properties.addons.satellites.added.length === 0) {
-		guildsRef
-			.doc(guildId)
-			.set(
-				{
-					addons: {
-						satellites: {
-							added: Firestore.FieldValue.delete(),
-						},
-					},
-				},
-				{
-					merge: true,
-				}
-			)
-			.catch((err) => {
-				console.error(err)
-				if (process.env.PRODUCTION_MODE) errors.report(err)
-			})
-		return true
 	}
 	return false
 }
