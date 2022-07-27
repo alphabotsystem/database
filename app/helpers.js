@@ -6,9 +6,6 @@ const isEmpty = function (object) {
 
 const create_guild_settings = function (settings) {
 	const settingsTemplate = {
-		addons: {
-			satellites: {},
-		},
 		settings: {
 			assistant: {
 				enabled: true,
