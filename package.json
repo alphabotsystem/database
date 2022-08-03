@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@google-cloud/error-reporting": "^3.0.1",
-    "@google-cloud/firestore": "^5.0.2",
+    "@google-cloud/firestore": "^6.0.0",
     "async-mutex": "^0.3.2",
     "deepmerge": "^4.2.2",
     "zeromq": "^6.0.0-beta.6"

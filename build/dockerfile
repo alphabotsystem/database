@@ -3,11 +3,6 @@ FROM node:16
 # Make a directory for the service
 WORKDIR /usr/src/database
 
-# Install Yarn
-RUN apt-get -y update \
-	&& apt-get -y install yarn \
-	&& apt-get clean
-
 # Install dependencies
 ADD ./package.json ./yarn.lock ./
 RUN yarn
