@@ -1,10 +1,10 @@
-const merge = require("deepmerge")
+import merge from "deepmerge"
 
-const isEmpty = function (object) {
+export const isEmpty = function (object) {
 	return Object.keys(object).length === 0
 }
 
-const create_guild_settings = function (settings) {
+export const create_guild_settings = function (settings) {
 	const settingsTemplate = {
 		settings: {
 			assistant: {
@@ -25,5 +25,3 @@ const create_guild_settings = function (settings) {
 	if (isEmpty(settings)) settings = {}
 	return merge(settingsTemplate, settings)
 }
-
-module.exports = { create_guild_settings, isEmpty }

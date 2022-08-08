@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:18-alpine
 
 # Make a directory for the service
 WORKDIR /usr/src/database

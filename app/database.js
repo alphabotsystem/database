@@ -1,12 +1,12 @@
-const helpers = require("./helpers.js")
+import { isEmpty, create_guild_settings } from "./helpers.js"
 
-const zmq = require("zeromq")
-const Mutex = require("async-mutex").Mutex
-const Firestore = require("@google-cloud/firestore")
+import zmq from "zeromq"
+import { Mutex } from "async-mutex"
+import { Firestore } from "@google-cloud/firestore"
 const firestore = new Firestore({
 	projectId: "nlc-bot-36685",
 })
-const { ErrorReporting } = require("@google-cloud/error-reporting")
+import { ErrorReporting } from "@google-cloud/error-reporting"
 const errors = new ErrorReporting()
 
 const isManager = process.env.HOSTNAME.split("-").length == 2 && process.env.HOSTNAME.split("-")[1] == "0"
@@ -96,7 +96,7 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 			delete properties.connection
 			delete properties.trace
 			delete properties.credit
-			if (helpers.isEmpty(properties)) return
+			if (isEmpty(properties)) return
 
 			if (!accountIdMap[accountId]) {
 				accountProperties[accountId] = properties
@@ -113,7 +113,7 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 
 const guild_validation = (guildId, properties) => {
 	if (!properties.settings) {
-		guildsRef.doc(guildId).set(helpers.create_guild_settings(properties))
+		guildsRef.doc(guildId).set(create_guild_settings(properties))
 		return true
 	}
 	if (properties.stale) {
@@ -255,3 +255,8 @@ const main = async () => {
 }
 
 main()
+
+process.on("SIGTERM", () => {
+	console.log("[Shutdown]: Database server is offline")
+	process.exit(0)
+})
