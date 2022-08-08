@@ -162,7 +162,7 @@ const unregistered_user_validation = (accountId, properties) => {
 }
 
 const get_guild_properties = (guildId) => {
-	response = guildProperties[guildId]
+	let response = guildProperties[guildId]
 	if (response) {
 		response.connection = accountProperties[response.settings.setup.connection]
 	}
