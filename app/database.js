@@ -21,9 +21,15 @@ let accountsReady = false
 let guildsReady = false
 let usersReady = false
 
-const accountsRef = firestore.collection("accounts")
-const guildsRef = firestore.collection("discord").doc("properties").collection("guilds")
-const unregisteredUsersRef = firestore.collection("discord").doc("properties").collection("users")
+const accountsRef = process.env.PRODUCTION
+	? firestore.collection("accounts")
+	: firestore.collection("accounts").where("customer.stripeId", "==", "cus_Gy6zKofFgMzD6i")
+const guildsRef = process.env.PRODUCTION
+	? firestore.collection("discord").doc("properties").collection("guilds")
+	: firestore.collection("discord").doc("properties").collection("guilds").where("settings.setup.connection", "==", "ebOX1w1N2DgMtXVN978fnL0FKCP2")
+const unregisteredUsersRef = process.env.PRODUCTION
+	? firestore.collection("discord").doc("properties").collection("users")
+	: firestore.collection("discord").doc("properties").collection("users").where("connection", "==", "ebOX1w1N2DgMtXVN978fnL0FKCP2")
 
 accountsRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
@@ -110,7 +116,6 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	usersReady = true
 })
 
-
 const guild_validation = (guildId, properties) => {
 	if (!properties.settings) {
 		guildsRef.doc(guildId).set(create_guild_settings(properties))
@@ -123,7 +128,7 @@ const guild_validation = (guildId, properties) => {
 				.delete()
 				.catch((err) => {
 					console.error(err)
-					if (process.env.PRODUCTION_MODE) errors.report(err)
+					if (process.env.PRODUCTION) errors.report(err)
 				})
 			return true
 		} else if (properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 86400) {
@@ -139,7 +144,7 @@ const guild_validation = (guildId, properties) => {
 				)
 				.catch((err) => {
 					console.error(err)
-					if (process.env.PRODUCTION_MODE) errors.report(err)
+					if (process.env.PRODUCTION) errors.report(err)
 				})
 			return true
 		}
@@ -154,7 +159,7 @@ const unregistered_user_validation = (accountId, properties) => {
 			.delete()
 			.catch((err) => {
 				console.error(err)
-				if (process.env.PRODUCTION_MODE) errors.report(err)
+				if (process.env.PRODUCTION) errors.report(err)
 			})
 		return true
 	}
@@ -197,7 +202,7 @@ const get_guild_keys = () => {
 				)
 				.catch((err) => {
 					console.error(err)
-					if (process.env.PRODUCTION_MODE) errors.report(err)
+					if (process.env.PRODUCTION) errors.report(err)
 				})
 		} else {
 			response[guildId] = properties.settings.setup.connection
@@ -249,7 +254,7 @@ const main = async () => {
 			})
 		} catch (error) {
 			console.error(error)
-			if (process.env.PRODUCTION_MODE) errors.report(error)
+			if (process.env.PRODUCTION) errors.report(error)
 		}
 	}
 }

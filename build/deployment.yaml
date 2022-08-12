@@ -30,7 +30,7 @@ spec:
             memory: "385Mi"
             cpu: "50m"
         env:
-          - name: PRODUCTION_MODE
+          - name: PRODUCTION
             value: "1"
           - name: NODE_ENV
             value: "production"
