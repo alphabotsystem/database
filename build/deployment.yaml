@@ -21,10 +21,10 @@ spec:
       - name: database
         image: us-central1-docker.pkg.dev/nlc-bot-36685/database/production
         imagePullPolicy: Always
-        volumeMounts:
-          - name: google-cloud-auth
-            mountPath: /run/secrets/google-cloud-auth
-            readOnly: true
+        # volumeMounts:
+        #   - name: google-cloud-auth
+        #     mountPath: /run/secrets/google-cloud-auth
+        #     readOnly: true
         resources:
           requests:
             memory: "300Mi"
