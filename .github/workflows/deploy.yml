@@ -43,13 +43,13 @@ jobs:
     # Build the Docker image
     - name: Build
       run: |-
-        docker image build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production:${{ github.sha }} -f ./build/dockerfile ./
+        docker image build -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production:latest -f ./build/dockerfile ./
 
     # Push the Docker image to Google Container Registry
     - name: Publish
       run: |-
-        gcloud artifacts docker images delete ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production:${{ github.sha }} || :
-        docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production:${{ github.sha }}
+        gcloud artifacts docker images delete ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production || :
+        docker push ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/production:latest
 
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
