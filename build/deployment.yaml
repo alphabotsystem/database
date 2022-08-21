@@ -21,10 +21,6 @@ spec:
       - name: database
         image: us-central1-docker.pkg.dev/nlc-bot-36685/database/production
         imagePullPolicy: Always
-        # volumeMounts:
-        #   - name: google-cloud-auth
-        #     mountPath: /run/secrets/google-cloud-auth
-        #     readOnly: true
         resources:
           requests:
             memory: "300Mi"
@@ -36,13 +32,7 @@ spec:
             value: "production"
         ports:
           - containerPort: 6900
-      # volumes:
-      #   - name: google-cloud-auth
-      #     secret:
-      #       secretName: google-cloud-auth
-      #       items:
-      #         - key: gcloud_credentials.json
-      #           path: key
+
 ---
 apiVersion: v1
 kind: Service
