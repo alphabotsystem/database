@@ -261,7 +261,11 @@ const main = async () => {
 
 main()
 
-process.on("SIGTERM", () => {
+const shutdown = () => {
 	console.log("[Shutdown]: Database server is offline")
 	process.exit(0)
+}
+
+process.on("SIGTERM", () => {
+	shutdown()
 })
