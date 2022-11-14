@@ -6,7 +6,7 @@ ADD ./package.json ./yarn.lock ./
 RUN yarn
 
 # Copy source code
-COPY ./app ./
+COPY ./src ./
 
 # Run
 ENTRYPOINT ["node", "database.js"]
