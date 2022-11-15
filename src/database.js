@@ -180,7 +180,7 @@ const get_account_keys = () => {
 	let response = {}
 	Object.keys(accountProperties).forEach((accountId) => {
 		const properties = accountProperties[accountId]
-		if (properties.oauth && !parseInt(accountId)) {
+		if (properties.oauth && !/^\d+$/.test(accountId)) {
 			response[accountId] = properties.oauth.discord.userId
 		}
 	})
