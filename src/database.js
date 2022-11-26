@@ -119,7 +119,7 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 })
 
 const guild_validation = (guildId, properties) => {
-	if (!properties.settings) {
+	if (!properties.settings || !properties.charting) {
 		guildsRef.doc(guildId).set(create_guild_settings(properties))
 		return true
 	}
@@ -228,7 +228,7 @@ const main = async () => {
 			const entityId = message.pop().toString()
 			const timestamp = message.pop().toString()
 			const service = message.pop().toString()
-			const delimeter = message.pop()
+			const delimiter = message.pop()
 			const origin = message.pop()
 
 			if (parseInt(timestamp) < Date.now()) continue
@@ -252,7 +252,7 @@ const main = async () => {
 			}
 
 			mutex.runExclusive(async () => {
-				await sock.send([origin, delimeter, JSON.stringify(response)])
+				await sock.send([origin, delimiter, JSON.stringify(response)])
 			})
 		} catch (error) {
 			console.error(error)

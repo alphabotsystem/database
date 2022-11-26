@@ -6,6 +6,12 @@ export const isEmpty = function (object) {
 
 export const create_guild_settings = function (settings) {
 	const settingsTemplate = {
+		charting: {
+			theme: "dark",
+			timeframe: "1-hour",
+			indicators: [],
+			chartType: "candles"
+		},
 		settings: {
 			assistant: {
 				enabled: true,
