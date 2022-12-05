@@ -191,7 +191,7 @@ const get_guild_keys = () => {
 	let response = {}
 	Object.keys(guildProperties).forEach((guildId) => {
 		const properties = guildProperties[guildId]
-		if (properties.stale && properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 86400) {
+		if (properties.stale && properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 3600) {
 			guildsRef
 				.doc(guildId)
 				.set(
