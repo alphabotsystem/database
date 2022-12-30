@@ -44,7 +44,6 @@ accountsRef.onSnapshot((querySnapshot) => {
 				delete properties.apiKeys[key].passphrase
 			})
 			delete properties.oauth.discord.accessToken
-			delete properties.oauth.discord.tokenType
 
 			accountProperties[accountId] = properties
 			const userId = properties.oauth.discord.userId
