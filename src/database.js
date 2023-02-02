@@ -38,6 +38,9 @@ accountsRef.onSnapshot((querySnapshot) => {
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
+			// Validation
+			if (isManager && account_validation(accountId, properties)) return
+
 			// Safety
 			Object.keys(properties.apiKeys).forEach((key) => {
 				delete properties.apiKeys[key].secret
@@ -116,6 +119,26 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	})
 	usersReady = true
 })
+
+const account_validation = (accountId, properties) => {
+	let modified = false
+	Object.keys(properties.customer.slots).forEach((feature) => {
+		Object.keys(properties.customer.slots[feature]).forEach((slot) => {
+			if (properties.customer.slots[feature][slot].enabled === false) {
+				delete properties.customer.slots[feature][slot]
+				modified = true
+			} else if (properties.customer.slots[feature][slot].added && properties.customer.slots[feature][slot].added.length === 0) {
+				delete properties.customer.slots[feature][slot]
+				modified = true
+			}
+		})
+	})
+	if (modified) {
+		accountsRef.doc(accountId).set(properties)
+		return true
+	}
+	return false
+}
 
 const guild_validation = (guildId, properties) => {
 	if (!properties.settings || !properties.charting) {
