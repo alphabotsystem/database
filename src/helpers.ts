@@ -1,11 +1,12 @@
 import merge from "deepmerge"
+import { GuildInfo } from "./types"
 
-export const isEmpty = function (object) {
+export const isEmpty = function (object: any) {
 	return Object.keys(object).length === 0
 }
 
-export const create_guild_settings = function (settings) {
-	const settingsTemplate = {
+export const create_guild_settings = function (settings: GuildInfo) {
+	const settingsTemplate: GuildInfo = {
 		charting: {
 			theme: "dark",
 			timeframe: "1-hour",
@@ -28,6 +29,6 @@ export const create_guild_settings = function (settings) {
 		},
 	}
 
-	if (isEmpty(settings)) settings = {}
+	if (isEmpty(settings)) settings = {} as GuildInfo
 	return merge(settingsTemplate, settings)
 }

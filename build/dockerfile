@@ -1,12 +1,16 @@
 FROM node:18-alpine
 WORKDIR /app
 
-# Install dependencies
-ADD ./package.json ./yarn.lock ./
+COPY ./package.json ./yarn.lock ./tsconfig.json ./
 RUN yarn
 
 # Copy source code
-COPY ./src ./
+COPY ./src ./src
+
+# Build
+RUN yarn build
+
+ENV DISPLAY=":1.0"
 
 # Run
-ENTRYPOINT ["node", "database.js"]
+ENTRYPOINT ["node", "./dist/database.js"]

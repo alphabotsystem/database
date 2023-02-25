@@ -2,39 +2,37 @@ import { isEmpty, create_guild_settings } from "./helpers.js"
 
 import zmq from "zeromq"
 import { Mutex } from "async-mutex"
-import { Firestore } from "@google-cloud/firestore"
+import { Firestore, FieldValue } from "@google-cloud/firestore"
 const firestore = new Firestore({
 	projectId: "nlc-bot-36685",
 })
 import { ErrorReporting } from "@google-cloud/error-reporting"
+import { AccountInfo, ApiExchangeId, DatabaseFeatureTag, GuildInfo, UserInfo } from "./types"
 const errors = new ErrorReporting()
 
-const isManager = process.env.HOSTNAME.split("-").length == 2 && process.env.HOSTNAME.split("-")[1] == "0"
+const isManager = process.env.HOSTNAME!.split("-").length == 2 && process.env.HOSTNAME!.split("-")[1] == "0"
 if (isManager) console.log("[Startup]: This instance is a database manager")
 else console.log("[Startup]: This instance is a slave")
 
-let accountProperties = {}
-let guildProperties = {}
-let accountIdMap = {}
+let accountProperties: { [accountId: string]: AccountInfo } = {}
+let userProperties: { [accountId: string]: UserInfo } = {}
+let guildProperties: { [guildId: string]: GuildInfo } = {}
+let accountIdMap: { [key: string]: string } = {}
 
 let accountsReady = false
 let guildsReady = false
 let usersReady = false
 
-const accountsRef = process.env.PRODUCTION
-	? firestore.collection("accounts")
-	: firestore.collection("accounts").where("customer.stripeId", "==", "cus_Gy6zKofFgMzD6i")
-const guildsRef = process.env.PRODUCTION
-	? firestore.collection("discord").doc("properties").collection("guilds")
-	: firestore.collection("discord").doc("properties").collection("guilds").where("settings.setup.connection", "==", "ebOX1w1N2DgMtXVN978fnL0FKCP2")
-const unregisteredUsersRef = process.env.PRODUCTION
-	? firestore.collection("discord").doc("properties").collection("users")
-	: firestore.collection("discord").doc("properties").collection("users").where("connection", "==", "ebOX1w1N2DgMtXVN978fnL0FKCP2")
+const accountsRef = firestore.collection("accounts")
+const guildsRef = firestore.collection("discord").doc("properties").collection("guilds")
+const unregisteredUsersRef = firestore.collection("discord").doc("properties").collection("users")
 
 accountsRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const accountId = change.doc.id
-		const properties = change.doc.data()
+		const properties = change.doc.data() as AccountInfo
+
+		if (!process.env.PRODUCTION && properties.customer.stripeId !== "cus_Gy6zKofFgMzD6i") return
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -43,8 +41,8 @@ accountsRef.onSnapshot((querySnapshot) => {
 
 			// Safety
 			Object.keys(properties.apiKeys).forEach((key) => {
-				delete properties.apiKeys[key].secret
-				delete properties.apiKeys[key].passphrase
+				properties.apiKeys[key as ApiExchangeId]!.secret = "************"
+				properties.apiKeys[key as ApiExchangeId]!.passphrase = "************"
 			})
 			delete properties.oauth.discord.accessToken
 
@@ -55,7 +53,7 @@ accountsRef.onSnapshot((querySnapshot) => {
 				accountIdMap[userId] = accountId
 				accountIdMap[accountId] = userId
 			} else if (accountIdMap[accountId]) {
-				delete accountProperties[userId]
+				if (userId) delete accountProperties[userId]
 				delete accountIdMap[accountIdMap[accountId]]
 				delete accountIdMap[accountId]
 			}
@@ -72,11 +70,17 @@ accountsRef.onSnapshot((querySnapshot) => {
 		}
 	})
 	accountsReady = true
+}, (error) => {
+	console.error("Error getting accounts: " + error)
+	process.exit(1)
 })
+
 guildsRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const guildId = change.doc.id
-		const properties = change.doc.data()
+		const properties = change.doc.data() as GuildInfo
+
+		if (!process.env.PRODUCTION && properties.settings.setup.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -91,11 +95,17 @@ guildsRef.onSnapshot((querySnapshot) => {
 		}
 	})
 	guildsReady = true
+}, (error) => {
+	console.error("Error getting guilds: " + error)
+	process.exit(1)
 })
+
 unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const accountId = change.doc.id
-		const properties = change.doc.data()
+		const properties = change.doc.data() as UserInfo
+
+		if (!process.env.PRODUCTION && properties.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -104,31 +114,34 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 
 			// Safety
 			delete properties.connection
-			delete properties.trace
 			delete properties.credit
 			if (isEmpty(properties)) return
 
 			if (!accountIdMap[accountId]) {
-				accountProperties[accountId] = properties
+				userProperties[accountId] = properties
 			}
 		} else if (change.type === "removed") {
-			delete accountProperties[accountId]
+			delete userProperties[accountId]
 		} else {
 			console.error("unknown change type: " + change.type)
 		}
 	})
 	usersReady = true
+}, (error) => {
+	console.error("Error getting unregistered users: " + error)
+	process.exit(1)
 })
 
-const account_validation = (accountId, properties) => {
+const account_validation = (accountId: string, properties: AccountInfo) => {
 	let modified = false
 	Object.keys(properties.customer.slots).forEach((feature) => {
-		Object.keys(properties.customer.slots[feature]).forEach((slot) => {
-			if (properties.customer.slots[feature][slot].enabled === false) {
-				delete properties.customer.slots[feature][slot]
+		Object.keys(properties.customer.slots[feature as DatabaseFeatureTag]).forEach((slot) => {
+			let slotDetails = properties.customer.slots[feature as DatabaseFeatureTag][slot]
+			if (slotDetails.enabled === false) {
+				delete properties.customer.slots[feature as DatabaseFeatureTag][slot]
 				modified = true
-			} else if (properties.customer.slots[feature][slot].added && properties.customer.slots[feature][slot].added.length === 0) {
-				delete properties.customer.slots[feature][slot]
+			} else if (slotDetails.added && slotDetails.added.length === 0) {
+				delete properties.customer.slots[feature as DatabaseFeatureTag][slot]
 				modified = true
 			}
 		})
@@ -140,7 +153,7 @@ const account_validation = (accountId, properties) => {
 	return false
 }
 
-const guild_validation = (guildId, properties) => {
+const guild_validation = (guildId: string, properties: GuildInfo) => {
 	if (!properties.settings || !properties.charting) {
 		guildsRef.doc(guildId).set(create_guild_settings(properties))
 		return true
@@ -160,7 +173,7 @@ const guild_validation = (guildId, properties) => {
 				.doc(guildId)
 				.set(
 					{
-						stale: Firestore.FieldValue.delete(),
+						stale: FieldValue.delete(),
 					},
 					{
 						merge: true,
@@ -176,8 +189,8 @@ const guild_validation = (guildId, properties) => {
 	return false
 }
 
-const unregistered_user_validation = (accountId, properties) => {
-	if (properties.connection === null && properties.trace === null && Object.keys(properties).length === 2) {
+const unregistered_user_validation = (accountId: string, properties: UserInfo) => {
+	if (properties.connection === null && Object.keys(properties).length === 1) {
 		unregisteredUsersRef
 			.doc(accountId)
 			.delete()
@@ -190,19 +203,19 @@ const unregistered_user_validation = (accountId, properties) => {
 	return false
 }
 
-const get_guild_properties = (guildId) => {
+const get_guild_properties = (guildId: string) => {
 	let response = guildProperties[guildId]
-	if (response) {
+	if (response && response.settings.setup.connection) {
 		response.connection = accountProperties[response.settings.setup.connection]
 	}
 	return response
 }
 
 const get_account_keys = () => {
-	let response = {}
+	let response: { [key: string]: string } = {}
 	Object.keys(accountProperties).forEach((accountId) => {
 		const properties = accountProperties[accountId]
-		if (properties.oauth && !/^\d+$/.test(accountId)) {
+		if (properties.oauth.discord.userId) {
 			response[accountId] = properties.oauth.discord.userId
 		}
 	})
@@ -210,7 +223,7 @@ const get_account_keys = () => {
 }
 
 const get_guild_keys = () => {
-	let response = {}
+	let response: { [key: string]: string | null } = {}
 	Object.keys(guildProperties).forEach((guildId) => {
 		const properties = guildProperties[guildId]
 		if (properties.stale && properties.stale.timestamp <= Math.floor(Date.now() / 1000) - 3600) {
@@ -218,7 +231,7 @@ const get_guild_keys = () => {
 				.doc(guildId)
 				.set(
 					{
-						stale: Firestore.FieldValue.delete(),
+						stale: FieldValue.delete(),
 					},
 					{
 						merge: true,
@@ -247,18 +260,17 @@ const main = async () => {
 			const message = await sock.receive()
 
 			// Pop received data and decode it
-			const entityId = message.pop().toString()
-			const timestamp = message.pop().toString()
-			const service = message.pop().toString()
-			const delimiter = message.pop()
-			const origin = message.pop()
+			const entityId = message.pop()!.toString()
+			const timestamp = message.pop()!.toString()
+			const service = message.pop()!.toString()
+			const delimiter = message.pop()!
+			const origin = message.pop()!
 
 			if (parseInt(timestamp) < Date.now()) continue
 
-			let response = {}
-
+			let response: any
 			if (service == "account_fetch") {
-				response = accountProperties[entityId]
+				response = accountProperties[entityId] ?? userProperties[entityId]
 			} else if (service == "guild_fetch") {
 				response = get_guild_properties(entityId)
 			} else if (service == "account_keys") {
