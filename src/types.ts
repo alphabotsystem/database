@@ -67,7 +67,7 @@ export interface GuildInfo {
 			enabled: boolean
 		}
 		messageProcessing: {
-			autodelete: boolean
+			autodelete: number | null
 			bias: ParserOptions
 		}
 		setup: {
