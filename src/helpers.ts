@@ -19,7 +19,7 @@ export const create_guild_settings = function (settings: GuildInfo) {
 			},
 			messageProcessing: {
 				bias: "traditional",
-				autodelete: false,
+				autodelete: null,
 			},
 			setup: {
 				completed: false,
