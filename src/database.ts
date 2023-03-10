@@ -32,6 +32,8 @@ accountsRef.onSnapshot((querySnapshot) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data() as AccountInfo
 
+		console.log(change.type, "account", accountId)
+
 		if (!process.env.PRODUCTION && properties.customer.stripeId !== "cus_Gy6zKofFgMzD6i") return
 
 		// Prepare cache
@@ -80,6 +82,8 @@ guildsRef.onSnapshot((querySnapshot) => {
 		const guildId = change.doc.id
 		const properties = change.doc.data() as GuildInfo
 
+		console.log(change.type, "guild", guildId)
+
 		if (!process.env.PRODUCTION && properties.settings.setup.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
 
 		// Prepare cache
@@ -104,6 +108,8 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 	querySnapshot.docChanges().forEach((change) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data() as UserInfo
+
+		console.log(change.type, "user", accountId)
 
 		if (!process.env.PRODUCTION && properties.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
 
