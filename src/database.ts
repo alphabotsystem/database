@@ -139,6 +139,9 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 })
 
 const account_validation = (accountId: string, properties: AccountInfo) => {
+	if (!properties.customer) {
+		return true
+	}
 	let modified = false
 	Object.keys(properties.customer.slots).forEach((feature) => {
 		Object.keys(properties.customer.slots[feature as DatabaseFeatureTag]).forEach((slot) => {
