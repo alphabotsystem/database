@@ -79,7 +79,7 @@ export interface GuildInfo {
 }
 
 export type ApiExchangeId = "binance" | "binancefutures"
-export type DatabaseFeatureTag = "satellites" | "advancedCharting" | "scheduledPosting" | "priceAlerts" | "botLicense"
+export type DatabaseFeatureTag = "satellites" | "advancedCharting" | "scheduledPosting" | "tradingview_layouts" | "priceAlerts" | "botLicense"
 
 export type ChartTheme = "light" | "dark"
 export type ChartType = "bars" | "candles" | "line" | "area" | "renko" | "kagi" | "point&Figure" | "line break" | "heikin ashi" | "hollow candles" | "baseline" | "hiLo" | "column"
