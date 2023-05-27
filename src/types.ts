@@ -29,7 +29,7 @@ export interface AccountInfo {
 		globalLastReset: number
 		globalResetCount: number
 		balance?: {
-			IEXC?: { [key:string]: number }
+			Twelvedata?: { [key:string]: number }
 			CCXT?: { [key:string]: number }
 			USD: number
 		}
@@ -43,7 +43,7 @@ export interface UserInfo {
 		globalLastReset: number
 		globalResetCount: number
 		balance?: {
-			IEXC?: { [key:string]: number }
+			Twelvedata?: { [key:string]: number }
 			CCXT?: { [key:string]: number }
 			USD: number
 		}

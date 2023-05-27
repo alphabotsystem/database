@@ -10,7 +10,5 @@ COPY ./src ./src
 # Build
 RUN yarn build
 
-ENV DISPLAY=":1.0"
-
 # Run
 ENTRYPOINT ["node", "./dist/database.js"]
