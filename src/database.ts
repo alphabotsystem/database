@@ -1,13 +1,14 @@
 import { isEmpty, create_guild_settings } from "./helpers.js"
 
-import zmq from "zeromq"
-import { Mutex } from "async-mutex"
+import express from "express"
 import { Firestore, FieldValue } from "@google-cloud/firestore"
+import { ErrorReporting } from "@google-cloud/error-reporting"
+import { AccountInfo, ApiExchangeId, DatabaseFeatureTag, GuildInfo, UserInfo } from "./types"
+
+const app = express()
 const firestore = new Firestore({
 	projectId: "nlc-bot-36685",
 })
-import { ErrorReporting } from "@google-cloud/error-reporting"
-import { AccountInfo, ApiExchangeId, DatabaseFeatureTag, GuildInfo, UserInfo } from "./types"
 const errors = new ErrorReporting()
 
 const isManager = process.env.HOSTNAME!.split("-").length == 2 && process.env.HOSTNAME!.split("-")[1] == "0"
@@ -212,15 +213,36 @@ const unregistered_user_validation = (accountId: string, properties: UserInfo) =
 	return false
 }
 
-const get_guild_properties = (guildId: string) => {
+app.use(express.json())
+
+app.post("/account/fetch", async (req, res) => {
+	const accountId = req.body.key as string | undefined
+	if (!accountId) {
+		console.log("Account ID not provided")
+		res.status(400).send({})
+		return
+	}
+
+	res.send(accountProperties[accountId] ?? userProperties[accountId] ?? {})
+})
+
+app.post("/guild/fetch", async (req, res) => {
+	const guildId = req.body.key as string | undefined
+	if (!guildId) {
+		console.log("Guild ID not provided")
+		res.status(400).send({})
+		return
+	}
+
 	let response = guildProperties[guildId]
 	if (response && response.settings.setup.connection) {
 		response.connection = accountProperties[response.settings.setup.connection]
 	}
-	return response
-}
 
-const get_account_keys = () => {
+	res.send(response ?? {})
+})
+
+app.post("/account/keys", async (req, res) => {
 	let response: { [key: string]: string } = {}
 	Object.keys(accountProperties).forEach((accountId) => {
 		const properties = accountProperties[accountId]
@@ -228,10 +250,11 @@ const get_account_keys = () => {
 			response[accountId] = properties.oauth.discord.userId
 		}
 	})
-	return response
-}
 
-const get_guild_keys = () => {
+	res.send(response)
+})
+
+app.post("/guild/keys", async (req, res) => {
 	let response: { [key: string]: string | null } = {}
 	Object.keys(guildProperties).forEach((guildId) => {
 		const properties = guildProperties[guildId]
@@ -254,61 +277,37 @@ const get_guild_keys = () => {
 			response[guildId] = properties.settings.setup.connection
 		}
 	})
-	return response
-}
 
-const main = async () => {
-	console.log("[Startup]: Database server is online")
+	res.send(response)
+})
 
-	const mutex = new Mutex()
-	const sock = new zmq.Router()
-	await sock.bind("tcp://*:6900")
-
-	while (true) {
-		try {
-			const message = await sock.receive()
-
-			// Pop received data and decode it
-			const entityId = message.pop()!.toString()
-			const timestamp = message.pop()!.toString()
-			const service = message.pop()!.toString()
-			const delimiter = message.pop()!
-			const origin = message.pop()!
-
-			if (parseInt(timestamp) < Date.now()) continue
-
-			let response: any
-			if (service == "account_fetch") {
-				response = accountProperties[entityId] ?? userProperties[entityId]
-			} else if (service == "guild_fetch") {
-				response = get_guild_properties(entityId)
-			} else if (service == "account_keys") {
-				response = get_account_keys()
-			} else if (service == "guild_keys") {
-				response = get_guild_keys()
-			} else if (service == "account_match") {
-				response = accountIdMap[entityId]
-			} else if (service == "account_status") {
-				response = accountsReady && usersReady
-			} else if (service == "guild_status") {
-				response = accountsReady && guildsReady
-			}
-
-			mutex.runExclusive(async () => {
-				await sock.send([origin, delimiter, JSON.stringify(response)])
-			})
-		} catch (error) {
-			console.error(error)
-			if (process.env.PRODUCTION) errors.report(error)
-		}
+app.post("/account/match", async (req, res) => {
+	const accountId = req.body.key as string | undefined
+	if (!accountId) {
+		console.log("Account ID not provided")
+		res.status(400).send({})
+		return
 	}
-}
+	res.send(accountIdMap[accountId])
+})
 
-main()
+app.post("/account/status", async (req, res) => {
+	res.send(accountsReady && usersReady)
+})
+
+app.post("/guild/status", async (req, res) => {
+	res.send(accountsReady && guildsReady)
+})
+
+const server = app.listen(6900, () => {
+	console.log("[Startup]: Database server is online")
+})
 
 const shutdown = () => {
-	console.log("[Shutdown]: Database server is offline")
-	process.exit(0)
+	server.close(() => {
+		console.log("[Shutdown]: Database server is offline")
+		process.exit(0)
+	})
 }
 
 process.on("SIGTERM", () => {
