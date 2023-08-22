@@ -33,9 +33,8 @@ accountsRef.onSnapshot((querySnapshot) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data() as AccountInfo
 
-		console.log(change.type, "account", accountId)
-
 		if (!process.env.PRODUCTION && properties.customer.stripeId !== "cus_Gy6zKofFgMzD6i") return
+		console.log(change.type, "account", accountId)
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -83,9 +82,8 @@ guildsRef.onSnapshot((querySnapshot) => {
 		const guildId = change.doc.id
 		const properties = change.doc.data() as GuildInfo
 
-		console.log(change.type, "guild", guildId)
-
 		if (!process.env.PRODUCTION && properties.settings.setup.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
+		console.log(change.type, "guild", guildId)
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -110,9 +108,8 @@ unregisteredUsersRef.onSnapshot((querySnapshot) => {
 		const accountId = change.doc.id
 		const properties = change.doc.data() as UserInfo
 
-		console.log(change.type, "user", accountId)
-
 		if (!process.env.PRODUCTION && properties.connection !== "ebOX1w1N2DgMtXVN978fnL0FKCP2") return
+		console.log(change.type, "user", accountId)
 
 		// Prepare cache
 		if (change.type === "added" || change.type === "modified") {
@@ -219,7 +216,7 @@ app.post("/account/fetch", async (req, res) => {
 	const accountId = req.body.key as string | undefined
 	if (!accountId) {
 		console.log("Account ID not provided")
-		res.status(400).send({})
+		res.status(400).send()
 		return
 	}
 
@@ -230,7 +227,7 @@ app.post("/guild/fetch", async (req, res) => {
 	const guildId = req.body.key as string | undefined
 	if (!guildId) {
 		console.log("Guild ID not provided")
-		res.status(400).send({})
+		res.status(400).send()
 		return
 	}
 
@@ -285,7 +282,7 @@ app.post("/account/match", async (req, res) => {
 	const accountId = req.body.key as string | undefined
 	if (!accountId) {
 		console.log("Account ID not provided")
-		res.status(400).send({})
+		res.status(400).send()
 		return
 	}
 	res.send(accountIdMap[accountId])
