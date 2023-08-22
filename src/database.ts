@@ -223,7 +223,7 @@ app.post("/account/fetch", async (req, res) => {
 		return
 	}
 
-	res.send(accountProperties[accountId] ?? userProperties[accountId] ?? {})
+	res.send(accountProperties[accountId] ?? userProperties[accountId])
 })
 
 app.post("/guild/fetch", async (req, res) => {
@@ -239,7 +239,7 @@ app.post("/guild/fetch", async (req, res) => {
 		response.connection = accountProperties[response.settings.setup.connection]
 	}
 
-	res.send(response ?? {})
+	res.send(response)
 })
 
 app.post("/account/keys", async (req, res) => {
