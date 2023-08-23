@@ -216,7 +216,7 @@ app.post("/account/fetch", async (req, res) => {
 	const accountId = req.body.key as string | undefined
 	if (!accountId) {
 		console.log("Account ID not provided")
-		res.status(400).send()
+		res.status(400).send({ response: null })
 		return
 	}
 
@@ -227,7 +227,7 @@ app.post("/guild/fetch", async (req, res) => {
 	const guildId = req.body.key as string | undefined
 	if (!guildId) {
 		console.log("Guild ID not provided")
-		res.status(400).send()
+		res.status(400).send({ response: null })
 		return
 	}
 
@@ -282,7 +282,7 @@ app.post("/account/match", async (req, res) => {
 	const accountId = req.body.key as string | undefined
 	if (!accountId) {
 		console.log("Account ID not provided")
-		res.status(400).send()
+		res.status(400).send({ response: null })
 		return
 	}
 
