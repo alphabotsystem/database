@@ -220,7 +220,7 @@ app.post("/account/fetch", async (req, res) => {
 		return
 	}
 
-	res.send(accountProperties[accountId] ?? userProperties[accountId])
+	res.send({ response: accountProperties[accountId] ?? userProperties[accountId] })
 })
 
 app.post("/guild/fetch", async (req, res) => {
@@ -236,7 +236,7 @@ app.post("/guild/fetch", async (req, res) => {
 		response.connection = accountProperties[response.settings.setup.connection]
 	}
 
-	res.send(response)
+	res.send({ response: response })
 })
 
 app.post("/account/keys", async (req, res) => {
@@ -248,7 +248,7 @@ app.post("/account/keys", async (req, res) => {
 		}
 	})
 
-	res.send(response)
+	res.send({ response: response })
 })
 
 app.post("/guild/keys", async (req, res) => {
@@ -275,7 +275,7 @@ app.post("/guild/keys", async (req, res) => {
 		}
 	})
 
-	res.send(response)
+	res.send({ response: response })
 })
 
 app.post("/account/match", async (req, res) => {
@@ -285,15 +285,16 @@ app.post("/account/match", async (req, res) => {
 		res.status(400).send()
 		return
 	}
-	res.send(accountIdMap[accountId])
+
+	res.send({ response: accountIdMap[accountId] })
 })
 
 app.post("/account/status", async (req, res) => {
-	res.send(accountsReady && usersReady)
+	res.send({ response: accountsReady && usersReady })
 })
 
 app.post("/guild/status", async (req, res) => {
-	res.send(accountsReady && guildsReady)
+	res.send({ response: accountsReady && guildsReady })
 })
 
 const server = app.listen(6900, () => {
