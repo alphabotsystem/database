@@ -63,9 +63,6 @@ export interface GuildInfo {
 		chartType: ChartType
 	}
 	settings: {
-		assistant: {
-			enabled: boolean
-		}
 		messageProcessing: {
 			autodelete: number | null
 			bias: ParserOptions

@@ -14,9 +14,6 @@ export const create_guild_settings = function (settings: GuildInfo) {
 			chartType: "candles"
 		},
 		settings: {
-			assistant: {
-				enabled: true,
-			},
 			messageProcessing: {
 				bias: "traditional",
 				autodelete: null,
