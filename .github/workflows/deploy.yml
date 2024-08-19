@@ -7,8 +7,8 @@ on:
 env:
   PROJECT_ID: nlc-bot-36685
   GAR_LOCATION: us-central1
-  GKE_CLUSTER: main-cluster
-  GKE_ZONE: us-central1-c
+  GKE_CLUSTER: production-cluster
+  GKE_ZONE: us-central1-b
   DEPLOYMENT_NAME: database
   REPOSITORY: database
   IMAGE: production
